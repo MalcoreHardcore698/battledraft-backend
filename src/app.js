@@ -4,7 +4,7 @@ const { ApolloServer } = require('apollo-server-express')
 require('dotenv').config()
 
 const typeDefs = require('./graphql/typeDefs')
-const UserSchema = require('./models/User')
+const resolvers = require('./graphql/resolvers')
 
 // Server
 async function start() {
@@ -19,24 +19,6 @@ async function start() {
     mongoose.connection.once('open', () =>
         console.log(`Connected to MongoDB`)
     )
-
-    const User = mongoose.model('users', UserSchema);
-
-    const resolvers = {
-        Query: {
-            getUsers: async () => await User.find({}).exec()
-        },
-        Mutation: {
-            addUser: async (_, args) => {
-                try {
-                    let response = await User.create(args);
-                    return response;
-                } catch(e) {
-                    return e.message;
-                }
-            }
-        }
-    }
 
     const server = new ApolloServer({ typeDefs, resolvers })
 

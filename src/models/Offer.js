@@ -1,8 +1,11 @@
 const mongoose = require('mongoose')
 const { Schema } = mongoose
 
-const Offer = new Schema({
-    message: String
+const OfferSchema = new Schema({
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    hub: { type: Schema.Types.ObjectId, ref: 'Hub', required: true },
+    title: { type: String, required: true },
+    message: { type: String, required: true }
 })
 
-module.exports = Offer
+module.exports = mongoose.model('Offer', OfferSchema)
