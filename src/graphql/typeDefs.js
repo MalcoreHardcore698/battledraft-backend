@@ -77,6 +77,7 @@ module.exports = gql`
         slogan: String!
         icon: String!
         poster: String!
+        color: String!
         countUsers: Int
         countOffers: Int
     }
@@ -88,16 +89,8 @@ module.exports = gql`
         image: String!
         hub: Hub!
         date: String!
-        source: String!
-        url: String!
-    }
-
-    input HubInput {
-        id: ID!
-    }
-
-    input UserInput {
-        id: ID!
+        source: String
+        url: String
     }
 
     input PaymentInput {
@@ -151,23 +144,29 @@ module.exports = gql`
             isVerifiedPhone: Boolean
             isNotified: Boolean
         ): Boolean!
+        deleteUser(
+            id: ID!
+        ): Boolean!
 
         addPersonalChat(
-            hub: HubInput!
+            hub: ID!
         ): Boolean!
 
         addGroupChat(
-            user: UserInput!
+            user: ID!
         ): Boolean!
 
         addNews(
             title: String!
             body: String!
             image: String!
-            hub: HubInput!
+            hub: ID!
             date: String!
-            source: String!
-            url: String!
+            source: String
+            url: String
+        ): Boolean!
+        deleteNews(
+            id: ID!
         ): Boolean!
 
         addHub(
@@ -176,6 +175,10 @@ module.exports = gql`
             slogan: String!
             icon: String!
             poster: String!
+            color: String!
+        ): Boolean!
+        deleteHub(
+            id: ID!
         ): Boolean!
 
         addOffer(
@@ -183,6 +186,9 @@ module.exports = gql`
             hub: ID!
             title: String!
             message: String!
+        ): Boolean!
+        deleteOffer(
+            id: ID!
         ): Boolean!
     }
 `

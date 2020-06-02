@@ -7,15 +7,24 @@ const GroupChat = require('./../models/GroupChat')
 
 module.exports = {
     User: {
+        id: parent => parent.id,
         name: parent => parent.name
     },
     Hub: {
+        id: parent => parent.id,
         countOffers: async (parent) => {
             const offers = await Offer.estimatedDocumentCount({ hub: { id: parent.id } })
             return offers
         }
     },
+    News: {
+        hub: async (parent) => {
+            const hub = await Hub.findById(parent.hub)
+            return hub
+        }
+    },
     Offer: {
+        id: parent => parent.id,
         user: async (parent) => {
             const user = await User.findById(parent.user)
             return user
@@ -49,18 +58,38 @@ module.exports = {
             await User.create(args)
             return true
         },
+        deleteUser: async (_, { id }) => {
+            await User.findById(id).deleteOne()
+            return true
+        },
+
         addOffer: async (_, args) => {
             await Offer.create(args)
             return true
         },
+        deleteOffer: async (_, { id }) => {
+            await Offer.findById(id).deleteOne()
+            return true
+        },
+
         addNews: async (_, args) => {
             await News.create(args)
             return true
         },
+        deleteNews: async (_, { id }) => {
+            await News.findById(id).deleteOne()
+            return true
+        },
+
         addHub: async (_, args) => {
             await Hub.create(args)
             return true
         },
+        deleteHub: async (_, { id }) => {
+            await Hub.findById(id).deleteOne()
+            return true
+        },
+
         addPersonalChat: async (_, args) => {
             await PersonalChat.create(args)
             return true

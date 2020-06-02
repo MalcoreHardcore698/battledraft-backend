@@ -7,6 +7,7 @@ const HubSchema = new Schema({
     slogan: { type: String, required: true },
     icon: { type: String, required: true },
     poster: { type: String, required: true },
+    color: { type: String, required: true },
     countUsers: { type: Number },
     countOffers: { type: Number }
 })
