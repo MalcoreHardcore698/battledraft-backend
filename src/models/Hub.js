@@ -9,7 +9,11 @@ const HubSchema = new Schema({
     poster: { type: String, required: true },
     color: { type: String, required: true },
     countUsers: { type: Number },
-    countOffers: { type: Number }
+    countOffers: { type: Number },
+    status: { type: String, required: true },
+    dateEdited: { type: String },
+    datePublished: { type: String },
+    dateCreated: { type: String, required: true }
 })
 
 module.exports = mongoose.model('Hub', HubSchema)

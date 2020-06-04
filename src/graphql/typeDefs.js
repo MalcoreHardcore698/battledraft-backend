@@ -47,12 +47,18 @@ module.exports = gql`
         user: User!
         text: String!
         date: String!
+        status: String!
+        dateEdited: String!
+        dateCreated: String!
     }
 
     type PersonalChat {
         id: ID!
         user: User!
         messages: [Message]
+        status: String!
+        dateEdited: String!
+        dateCreated: String!
     }
     
     type GroupChat {
@@ -60,6 +66,9 @@ module.exports = gql`
         hub: Hub!
         members: [User]
         messages: [Message]
+        status: String!
+        dateEdited: String
+        dateCreated: String!
     }
 
     type Offer {
@@ -68,6 +77,10 @@ module.exports = gql`
         hub: Hub!
         title: String!
         message: String!
+        status: String!
+        dateEdited: String
+        datePublished: String
+        dateCreated: String!
     }
 
     type Hub {
@@ -80,6 +93,10 @@ module.exports = gql`
         color: String!
         countUsers: Int
         countOffers: Int
+        status: String!
+        dateEdited: String
+        datePublished: String
+        dateCreated: String!
     }
 
     type News {
@@ -88,9 +105,12 @@ module.exports = gql`
         body: String!
         image: String!
         hub: Hub!
-        date: String!
         source: String
         url: String
+        status: String!
+        dateEdited: String
+        datePublished: String
+        dateCreated: String!
     }
 
     input PaymentInput {
@@ -161,9 +181,12 @@ module.exports = gql`
             body: String!
             image: String!
             hub: ID!
-            date: String!
             source: String
             url: String
+            status: String!
+            dateEdited: String
+            datePublished: String
+            dateCreated: String!
         ): Boolean!
         deleteNews(
             id: ID!
@@ -176,6 +199,10 @@ module.exports = gql`
             icon: String!
             poster: String!
             color: String!
+            status: String!
+            dateEdited: String
+            datePublished: String
+            dateCreated: String!
         ): Boolean!
         deleteHub(
             id: ID!
@@ -186,6 +213,10 @@ module.exports = gql`
             hub: ID!
             title: String!
             message: String!
+            status: String!
+            dateEdited: String
+            datePublished: String
+            dateCreated: String!
         ): Boolean!
         deleteOffer(
             id: ID!

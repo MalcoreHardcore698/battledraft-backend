@@ -12,6 +12,7 @@ module.exports = {
     },
     Hub: {
         id: parent => parent.id,
+        countUsers: () => 0,
         countOffers: async (parent) => {
             const offers = await Offer.estimatedDocumentCount({ hub: { id: parent.id } })
             return offers

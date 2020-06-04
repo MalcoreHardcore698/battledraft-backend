@@ -6,9 +6,12 @@ const NewsSchema = new Schema({
     title: { type: String, required: true },
     body: { type: String, required: true },
     image: { type: String, required: true },
-    date: { type: Date, required: true },
     source: { type: String },
-    url: { type: String }
+    url: { type: String },
+    status: { type: String, required: true },
+    dateEdited: { type: String },
+    datePublished: { type: String },
+    dateCreated: { type: String, required: true }
 })
 
 module.exports = mongoose.model('News', NewsSchema)
