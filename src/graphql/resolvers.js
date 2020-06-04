@@ -14,8 +14,8 @@ module.exports = {
         id: parent => parent.id,
         countUsers: () => 0,
         countOffers: async (parent) => {
-            const offers = await Offer.estimatedDocumentCount({ hub: { id: parent.id } })
-            return offers
+            const offers = await Offer.find({ hub: parent.id })
+            return offers.length
         }
     },
     News: {
@@ -42,6 +42,15 @@ module.exports = {
         allHubs: async () => await Hub.find(),
         allPersonalChats: async () => await PersonalChat.find(),
         allGroupChats: async () => await GroupChat.find(),
+        allUserRoles: () => ([
+            'ADMINISTRATOR',
+            'MODERATOR',
+            'USER'
+        ]),
+        allStatus: () => ([
+            'MODERATION',
+            'PUBLISHED'
+        ]),
 
         getUser: async (_,  { id }) => await User.findById(id),
         getOffer: async (_,  { id }) => await Offer.findById(id),

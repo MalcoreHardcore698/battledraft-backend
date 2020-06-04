@@ -7,6 +7,11 @@ module.exports = gql`
         USER
     }
 
+    enum Status {
+        MODERATION
+        PUBLISHED
+    }
+
     type User {
         id: ID!
         name: String!
@@ -47,7 +52,7 @@ module.exports = gql`
         user: User!
         text: String!
         date: String!
-        status: String!
+        status: Status!
         dateEdited: String!
         dateCreated: String!
     }
@@ -56,7 +61,7 @@ module.exports = gql`
         id: ID!
         user: User!
         messages: [Message]
-        status: String!
+        status: Status!
         dateEdited: String!
         dateCreated: String!
     }
@@ -66,7 +71,7 @@ module.exports = gql`
         hub: Hub!
         members: [User]
         messages: [Message]
-        status: String!
+        status: Status!
         dateEdited: String
         dateCreated: String!
     }
@@ -77,7 +82,7 @@ module.exports = gql`
         hub: Hub!
         title: String!
         message: String!
-        status: String!
+        status: Status!
         dateEdited: String
         datePublished: String
         dateCreated: String!
@@ -93,7 +98,7 @@ module.exports = gql`
         color: String!
         countUsers: Int
         countOffers: Int
-        status: String!
+        status: Status!
         dateEdited: String
         datePublished: String
         dateCreated: String!
@@ -107,7 +112,7 @@ module.exports = gql`
         hub: Hub!
         source: String
         url: String
-        status: String!
+        status: Status!
         dateEdited: String
         datePublished: String
         dateCreated: String!
@@ -135,6 +140,8 @@ module.exports = gql`
         allHubs: [Hub]
         allPersonalChats: [PersonalChat]
         allGroupChats: [GroupChat]
+        allUserRoles: [UserRoles]
+        allStatus: [Status]
 
         getUser(id: ID!): User
         getOffer(id: ID!): Offer
@@ -183,7 +190,7 @@ module.exports = gql`
             hub: ID!
             source: String
             url: String
-            status: String!
+            status: Status!
             dateEdited: String
             datePublished: String
             dateCreated: String!
@@ -199,7 +206,7 @@ module.exports = gql`
             icon: String!
             poster: String!
             color: String!
-            status: String!
+            status: Status!
             dateEdited: String
             datePublished: String
             dateCreated: String!
@@ -213,7 +220,7 @@ module.exports = gql`
             hub: ID!
             title: String!
             message: String!
-            status: String!
+            status: Status!
             dateEdited: String
             datePublished: String
             dateCreated: String!

@@ -10,7 +10,11 @@ const HubSchema = new Schema({
     color: { type: String, required: true },
     countUsers: { type: Number },
     countOffers: { type: Number },
-    status: { type: String, required: true },
+    status:  {
+        type: String,
+        enum: ['MODERATION', 'PUBLISHED'],
+        required: true
+    },
     dateEdited: { type: String },
     datePublished: { type: String },
     dateCreated: { type: String, required: true }
