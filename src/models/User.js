@@ -12,6 +12,7 @@ const UserSchema = new Schema({
         required: true
     },
     avatar: { type: String },
+    preferences: [{ type: Schema.Types.ObjectId, ref: 'Hub' }],
     payment: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
     transactions: [{ type: Schema.Types.ObjectId, ref: 'Transaction' }],
     dateLastAuth: { type: Date, required: true },

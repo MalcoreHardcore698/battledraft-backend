@@ -8,6 +8,7 @@ const HubSchema = new Schema({
     icon: { type: String, required: true },
     poster: { type: String, required: true },
     color: { type: String, required: true },
+    offers: { type: Schema.Types.ObjectId, ref: 'Offer' },
     countUsers: { type: Number },
     countOffers: { type: Number },
     status:  {

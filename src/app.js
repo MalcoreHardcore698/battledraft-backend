@@ -28,7 +28,7 @@ async function start() {
 
 
     app.listen({ port }, () => {
-        console.log(`Server ready at http://localhost:${port}${server.graphqlPath}`)
+        console.log(`Server ready at http://api.battledraft.ru/${port}${server.graphqlPath}`)
     })
 }
 

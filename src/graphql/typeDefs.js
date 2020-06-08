@@ -12,6 +12,11 @@ module.exports = gql`
         PUBLISHED
     }
 
+    type Image {
+        type: String
+        data: String
+    }
+
     type User {
         id: ID!
         name: String!
@@ -22,6 +27,7 @@ module.exports = gql`
         balance: Int
         avatar: String
         payment: [Payment]
+        preferences: [Hub]
         transactions: [Transaction]
         dateLastAuth: String!
         dateRegistration: String!
@@ -96,6 +102,7 @@ module.exports = gql`
         icon: String!
         poster: String!
         color: String!
+        offers: [Offer]
         countUsers: Int
         countOffers: Int
         status: Status!
@@ -135,13 +142,20 @@ module.exports = gql`
 
     type Query {
         allUsers: [User]
-        allOffers: [Offer]
-        allNews: [News]
-        allHubs: [Hub]
+        allOffers(status: Status): [Offer]
+        allNews(status: Status): [News]
+        allHubs(status: Status): [Hub]
         allPersonalChats: [PersonalChat]
         allGroupChats: [GroupChat]
         allUserRoles: [UserRoles]
         allStatus: [Status]
+        allImages: [Image]
+
+        authUser(
+            name: String
+            email: String
+            password: String!
+        ): User!
 
         getUser(id: ID!): User
         getOffer(id: ID!): Offer
@@ -156,6 +170,11 @@ module.exports = gql`
     }
 
     type Mutation {
+        addImage(
+            data: String
+            type: String
+        ): Boolean
+
         addUser(
             name: String!
             password: String!
@@ -164,9 +183,26 @@ module.exports = gql`
             role: UserRoles!
             balance: Int
             avatar: String
+            preferences: [ID]
             payment: PaymentInput
             dateLastAuth: String!
             dateRegistration: String!
+            isVerifiedEmail: Boolean
+            isVerifiedPhone: Boolean
+            isNotified: Boolean
+        ): Boolean!
+        editUser(
+            id: ID!
+            name: String
+            password: String
+            email: String
+            phone: String
+            role: UserRoles
+            balance: Int
+            avatar: String
+            preferences: [ID]
+            dateLastAuth: String
+            dateRegistration: String
             isVerifiedEmail: Boolean
             isVerifiedPhone: Boolean
             isNotified: Boolean
@@ -195,8 +231,21 @@ module.exports = gql`
             datePublished: String
             dateCreated: String!
         ): Boolean!
-        deleteNews(
+        editNews(
             id: ID!
+            title: String
+            body: String
+            image: String
+            hub: ID
+            source: String
+            url: String
+            status: Status
+            dateEdited: String!
+            datePublished: String
+            dateCreated: String
+        ): Boolean!
+        deleteNews(
+            id: [ID!]!
         ): Boolean!
 
         addHub(
@@ -211,8 +260,21 @@ module.exports = gql`
             datePublished: String
             dateCreated: String!
         ): Boolean!
-        deleteHub(
+        editHub(
             id: ID!
+            title: String
+            description: String
+            slogan: String
+            icon: String
+            poster: String
+            color: String
+            status: Status
+            dateEdited: String!
+            datePublished: String
+            dateCreated: String
+        ): Boolean!
+        deleteHubs(
+            id: [ID!]!
         ): Boolean!
 
         addOffer(
@@ -225,8 +287,19 @@ module.exports = gql`
             datePublished: String
             dateCreated: String!
         ): Boolean!
-        deleteOffer(
+        editOffer(
             id: ID!
+            user: ID
+            hub: ID
+            title: String
+            message: String
+            status: Status
+            dateEdited: String!
+            datePublished: String
+            dateCreated: String
+        ): Boolean!
+        deleteOffer(
+            id: [ID!]!
         ): Boolean!
     }
 `

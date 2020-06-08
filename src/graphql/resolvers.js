@@ -4,14 +4,29 @@ const News = require('./../models/News')
 const Hub = require('./../models/Hub')
 const PersonalChat = require('./../models/PersonalChat')
 const GroupChat = require('./../models/GroupChat')
+const Image = require('./../models/Image')
 
 module.exports = {
     User: {
         id: parent => parent.id,
-        name: parent => parent.name
+        name: parent => parent.name,
+        preferences: async (parent) => {
+            const hubs = []
+            if (parent.preferences) {
+                for (id of parent.preferences) {
+                    const hub = await Hub.findById(id)
+                    hubs.push(hub)
+                }
+            }
+            return hubs
+        }
     },
     Hub: {
         id: parent => parent.id,
+        offers: async (parent) => {
+            const offers = await Offer.find({ hub: parent.id })
+            return offers
+        },
         countUsers: () => 0,
         countOffers: async (parent) => {
             const offers = await Offer.find({ hub: parent.id })
@@ -36,10 +51,29 @@ module.exports = {
         }
     },
     Query: {
+        allImages: async () => {
+            const imgs = await Image.find()
+            const result = []
+            for (img of imgs) {
+                result.push({
+                    data: Buffer.from(img.data).toString(),
+                    type: img.type
+                })
+            }
+            return result
+        },
         allUsers: async () => await User.find(),
         allOffers: async () => await Offer.find(),
-        allNews: async () => await News.find(),
-        allHubs: async () => await Hub.find(),
+        allNews: async (_, { status }) => {
+            const news = await News.find()
+            if (status) return news.filter(n => n.status === status)
+            return news
+        },
+        allHubs: async (_, { status }) => {
+            const hubs = await Hub.find()
+            if (status) return hubs.filter(h => h.status === status)
+            return hubs
+        },
         allPersonalChats: async () => await PersonalChat.find(),
         allGroupChats: async () => await GroupChat.find(),
         allUserRoles: () => ([
@@ -51,6 +85,11 @@ module.exports = {
             'MODERATION',
             'PUBLISHED'
         ]),
+
+        authUser: async (_, args) => {
+            const user = await User.find(args)
+            return (user && user.length > 0) ? user[0] : {}
+        },
 
         getUser: async (_,  { id }) => await User.findById(id),
         getOffer: async (_,  { id }) => await Offer.findById(id),
@@ -64,8 +103,31 @@ module.exports = {
         countHubs: async () => await Hub.estimatedDocumentCount()
     },
     Mutation: {
+        addImage: async (_, args) => {
+            await Image.create(args)
+            return true
+        },
+
         addUser: async (_, args) => {
             await User.create(args)
+            return true
+        },
+        editUser: async (_, args) => {
+            const user = await User.findById(args.id)
+            user.name = args.name || user.name
+            user.password = args.password || user.password
+            user.email = args.email || user.email
+            user.phone = args.phone || user.phone
+            user.role = args.role || user.role
+            user.balance = args.balance || user.balance
+            user.avatar = args.avatar || user.avatar
+            user.preferences = args.preferences || user.preferences
+            user.dateLastAuth = args.dateLastAuth || user.dateLastAuth
+            user.dateRegistration = args.dateRegistration || user.dateRegistration
+            user.isVerifiedEmail = args.isVerifiedEmail || user.isVerifiedEmail
+            user.isVerifiedPhone = args.isVerifiedPhone || user.isVerifiedPhone
+            user.isNotified = args.isNotified || user.isNotified
+            await user.save()
             return true
         },
         deleteUser: async (_, { id }) => {
@@ -77,6 +139,19 @@ module.exports = {
             await Offer.create(args)
             return true
         },
+        editOffer: async (_, args) => {
+            const offer = await Offer.findById(args.id)
+            offer.user = args.user || offer.user
+            offer.hub = args.hub || offer.hub
+            offer.title = args.title || offer.title
+            offer.message = args.message || offer.message
+            offer.status = args.status || offer.status
+            offer.dateEdited = args.dateEdited || offer.dateEdited
+            offer.datePublished = args.datePublished || offer.datePublished
+            offer.dateCreated = args.dateCreated || offer.dateCreated
+            await offer.save()
+            return true
+        },
         deleteOffer: async (_, { id }) => {
             await Offer.findById(id).deleteOne()
             return true
@@ -86,8 +161,25 @@ module.exports = {
             await News.create(args)
             return true
         },
+        editNews: async (_, args) => {
+            const news = await News.findById(args.id)
+            news.title = args.title || news.title
+            news.body = args.body || news.body
+            news.image = args.image || news.image
+            news.hub = args.hub || news.hub
+            news.source = args.source || news.source
+            news.url = args.url || news.url
+            news.status = args.status || news.status
+            news.dateEdited = args.dateEdited || news.dateEdited
+            news.datePublished = args.datePublished || news.datePublished
+            news.dateCreated = args.dateCreated || news.dateCreated
+            await news.save()
+            return true
+        },
         deleteNews: async (_, { id }) => {
-            await News.findById(id).deleteOne()
+            for (i of id) {
+                await News.findById(id).deleteOne()
+            }
             return true
         },
 
@@ -95,8 +187,25 @@ module.exports = {
             await Hub.create(args)
             return true
         },
-        deleteHub: async (_, { id }) => {
-            await Hub.findById(id).deleteOne()
+        editHub: async (_, args) => {
+            const hub = await Hub.findById(args.id)
+            hub.title = args.title || hub.title
+            hub.description = args.description || hub.description
+            hub.slogan = args.slogan || hub.slogan
+            hub.icon = args.icon || hub.icon
+            hub.poster = args.poster || hub.poster
+            hub.color = args.color || hub.color
+            hub.status = args.status || hub.status
+            hub.dateEdited = args.dateEdited || hub.dateEdited
+            hub.datePublished = args.datePublished || hub.datePublished
+            hub.dateCreated = args.dateCreated || hub.dateCreated
+            await hub.save()
+            return true
+        },
+        deleteHubs: async (_, { id }) => {
+            for (i of id) {
+                await Hub.findById(id).deleteOne()
+            }
             return true
         },
 
