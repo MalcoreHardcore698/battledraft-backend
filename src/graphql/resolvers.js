@@ -51,17 +51,6 @@ module.exports = {
         }
     },
     Query: {
-        allImages: async () => {
-            const imgs = await Image.find()
-            const result = []
-            for (img of imgs) {
-                result.push({
-                    data: Buffer.from(img.data).toString(),
-                    type: img.type
-                })
-            }
-            return result
-        },
         allUsers: async () => await User.find(),
         allOffers: async () => await Offer.find(),
         allNews: async (_, { status }) => {
@@ -103,13 +92,11 @@ module.exports = {
         countHubs: async () => await Hub.estimatedDocumentCount()
     },
     Mutation: {
-        addImage: async (_, args) => {
-            await Image.create(args)
-            return true
-        },
-
         addUser: async (_, args) => {
-            await User.create(args)
+            await User.create({
+                ...args,
+                avatar: args.avatar.then(file => file)
+            })
             return true
         },
         editUser: async (_, args) => {
@@ -120,7 +107,7 @@ module.exports = {
             user.phone = args.phone || user.phone
             user.role = args.role || user.role
             user.balance = args.balance || user.balance
-            user.avatar = args.avatar || user.avatar
+            user.avatar = args.avatar.then(file => file) || user.avatar
             user.preferences = args.preferences || user.preferences
             user.dateLastAuth = args.dateLastAuth || user.dateLastAuth
             user.dateRegistration = args.dateRegistration || user.dateRegistration
@@ -184,7 +171,13 @@ module.exports = {
         },
 
         addHub: async (_, args) => {
-            await Hub.create(args)
+            const icon = await args.icon.then(file => file)
+            const poster = await args.poster.then(file => file)
+            await Hub.create({
+                ...args,
+                icon: JSON.parse(icon),
+                poster: JSON.parse(poster)
+            })
             return true
         },
         editHub: async (_, args) => {
@@ -192,8 +185,8 @@ module.exports = {
             hub.title = args.title || hub.title
             hub.description = args.description || hub.description
             hub.slogan = args.slogan || hub.slogan
-            hub.icon = args.icon || hub.icon
-            hub.poster = args.poster || hub.poster
+            hub.icon = await args.icon.then(file => file) || hub.icon
+            hub.poster = await args.poster.then(file => file) || hub.poster
             hub.color = args.color || hub.color
             hub.status = args.status || hub.status
             hub.dateEdited = args.dateEdited || hub.dateEdited

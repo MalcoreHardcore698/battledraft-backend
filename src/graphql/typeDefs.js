@@ -12,9 +12,10 @@ module.exports = gql`
         PUBLISHED
     }
 
-    type Image {
-        type: String
-        data: String
+    type File {
+        filename: String!
+        mimetype: String!
+        encoding: String!
     }
 
     type User {
@@ -25,7 +26,7 @@ module.exports = gql`
         phone: String!
         role: UserRoles!
         balance: Int
-        avatar: String
+        avatar: File
         payment: [Payment]
         preferences: [Hub]
         transactions: [Transaction]
@@ -99,8 +100,8 @@ module.exports = gql`
         title: String!
         description: String!
         slogan: String!
-        icon: String!
-        poster: String!
+        icon: File!
+        poster: File!
         color: String!
         offers: [Offer]
         countUsers: Int
@@ -115,7 +116,7 @@ module.exports = gql`
         id: ID!
         title: String!
         body: String!
-        image: String!
+        image: File!
         hub: Hub!
         source: String
         url: String
@@ -149,7 +150,6 @@ module.exports = gql`
         allGroupChats: [GroupChat]
         allUserRoles: [UserRoles]
         allStatus: [Status]
-        allImages: [Image]
 
         authUser(
             name: String
@@ -170,11 +170,6 @@ module.exports = gql`
     }
 
     type Mutation {
-        addImage(
-            data: String
-            type: String
-        ): Boolean
-
         addUser(
             name: String!
             password: String!
@@ -182,7 +177,7 @@ module.exports = gql`
             phone: String!
             role: UserRoles!
             balance: Int
-            avatar: String
+            avatar: Upload
             preferences: [ID]
             payment: PaymentInput
             dateLastAuth: String!
@@ -199,7 +194,7 @@ module.exports = gql`
             phone: String
             role: UserRoles
             balance: Int
-            avatar: String
+            avatar: Upload
             preferences: [ID]
             dateLastAuth: String
             dateRegistration: String
@@ -222,7 +217,7 @@ module.exports = gql`
         addNews(
             title: String!
             body: String!
-            image: String!
+            image: Upload!
             hub: ID!
             source: String
             url: String
@@ -235,7 +230,7 @@ module.exports = gql`
             id: ID!
             title: String
             body: String
-            image: String
+            image: Upload
             hub: ID
             source: String
             url: String
@@ -252,8 +247,8 @@ module.exports = gql`
             title: String!
             description: String!
             slogan: String!
-            icon: String!
-            poster: String!
+            icon: Upload!
+            poster: Upload!
             color: String!
             status: Status!
             dateEdited: String
@@ -265,8 +260,8 @@ module.exports = gql`
             title: String
             description: String
             slogan: String
-            icon: String
-            poster: String
+            icon: Upload
+            poster: Upload
             color: String
             status: Status
             dateEdited: String!
