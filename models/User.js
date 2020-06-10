@@ -12,6 +12,10 @@ const UserSchema = new Schema({
         required: true
     },
     avatar: { type: String },
+    level: { type: Number },
+    experience: { type: Number },
+    balance: { type: Number },
+    offers: [{ type: Schema.Types.ObjectId, ref: 'Offer' }],
     preferences: [{ type: Schema.Types.ObjectId, ref: 'Hub' }],
     payment: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
     transactions: [{ type: Schema.Types.ObjectId, ref: 'Transaction' }],

@@ -12,12 +12,6 @@ module.exports = gql`
         PUBLISHED
     }
 
-    type File {
-        filename: String!
-        mimetype: String!
-        encoding: String!
-    }
-
     type User {
         id: ID!
         name: String!
@@ -26,7 +20,10 @@ module.exports = gql`
         phone: String!
         role: UserRoles!
         balance: Int
-        avatar: File
+        level: Int
+        experience: Int
+        avatar: String
+        offers: [Offer]
         payment: [Payment]
         preferences: [Hub]
         transactions: [Transaction]
@@ -100,8 +97,8 @@ module.exports = gql`
         title: String!
         description: String!
         slogan: String!
-        icon: File!
-        poster: File!
+        icon: String!
+        poster: String!
         color: String!
         offers: [Offer]
         countUsers: Int
@@ -116,7 +113,7 @@ module.exports = gql`
         id: ID!
         title: String!
         body: String!
-        image: File!
+        image: String!
         hub: Hub!
         source: String
         url: String
@@ -150,6 +147,7 @@ module.exports = gql`
         allGroupChats: [GroupChat]
         allUserRoles: [UserRoles]
         allStatus: [Status]
+        allUserOffers(id: ID!): [Offer]!
 
         authUser(
             name: String
@@ -177,6 +175,8 @@ module.exports = gql`
             phone: String!
             role: UserRoles!
             balance: Int
+            level: Int
+            experience: Int
             avatar: Upload
             preferences: [ID]
             payment: PaymentInput
@@ -194,6 +194,8 @@ module.exports = gql`
             phone: String
             role: UserRoles
             balance: Int
+            level: Int
+            experience: Int
             avatar: Upload
             preferences: [ID]
             dateLastAuth: String

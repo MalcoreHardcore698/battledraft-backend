@@ -10,6 +10,10 @@ module.exports = {
     User: {
         id: parent => parent.id,
         name: parent => parent.name,
+        offers: async (parent) => {
+            const offers = await Offer.find({ user: parent.id })
+            return offers
+        },
         preferences: async (parent) => {
             const hubs = []
             if (parent.preferences) {
@@ -74,6 +78,10 @@ module.exports = {
             'MODERATION',
             'PUBLISHED'
         ]),
+        allUserOffers: async (_, { id }) => {
+            const offers = await Offer.find({ user: id })
+            return offers || []
+        },
 
         authUser: async (_, args) => {
             const user = await User.find(args)
@@ -92,22 +100,27 @@ module.exports = {
         countHubs: async () => await Hub.estimatedDocumentCount()
     },
     Mutation: {
-        addUser: async (_, args) => {
+        addUser: async (_, args, { storeUpload }) => {
+            const avatar = await storeUpload(args.name, args.avatar)
             await User.create({
                 ...args,
-                avatar: args.avatar.then(file => file)
+                avatar: avatar.path
             })
             return true
         },
-        editUser: async (_, args) => {
+        editUser: async (_, args, { storeUpload }) => {
             const user = await User.findById(args.id)
+            const avatar = args.avatar && await storeUpload(args.name, args.avatar)
+
             user.name = args.name || user.name
             user.password = args.password || user.password
             user.email = args.email || user.email
             user.phone = args.phone || user.phone
             user.role = args.role || user.role
             user.balance = args.balance || user.balance
-            user.avatar = args.avatar.then(file => file) || user.avatar
+            user.level = args.level || user.level
+            user.experience = args.experience || user.experience
+            user.avatar = (avatar && avatar.path) || user.avatar
             user.preferences = args.preferences || user.preferences
             user.dateLastAuth = args.dateLastAuth || user.dateLastAuth
             user.dateRegistration = args.dateRegistration || user.dateRegistration
@@ -144,15 +157,21 @@ module.exports = {
             return true
         },
 
-        addNews: async (_, args) => {
-            await News.create(args)
+        addNews: async (_, args, { storeUpload }) => {
+            const image = await storeUpload(args.title, args.image)
+            await News.create({
+                ...args,
+                image: image.path
+            })
             return true
         },
-        editNews: async (_, args) => {
+        editNews: async (_, args, { storeUpload }) => {
             const news = await News.findById(args.id)
+            const image = args.image && await storeUpload(args.title, args.image)
+
             news.title = args.title || news.title
             news.body = args.body || news.body
-            news.image = args.image || news.image
+            news.image = (image && image.path) || news.image
             news.hub = args.hub || news.hub
             news.source = args.source || news.source
             news.url = args.url || news.url
@@ -170,28 +189,32 @@ module.exports = {
             return true
         },
 
-        addHub: async (_, args) => {
-            const icon = await args.icon.then(file => file)
-            const poster = await args.poster.then(file => file)
+        addHub: async (_, args, { storeUpload }) => {
+            const icon = await storeUpload(args.title, args.icon)
+            const poster = await storeUpload(args.title, args.poster)
             await Hub.create({
                 ...args,
-                icon: JSON.parse(icon),
-                poster: JSON.parse(poster)
+                icon: icon.path,
+                poster: poster.path
             })
             return true
         },
-        editHub: async (_, args) => {
+        editHub: async (_, args, { storeUpload }) => {
             const hub = await Hub.findById(args.id)
+            const icon = args.icon && await storeUpload(args.title, args.icon)
+            const poster = args.poster && await storeUpload(args.title, args.poster)
+            
             hub.title = args.title || hub.title
             hub.description = args.description || hub.description
             hub.slogan = args.slogan || hub.slogan
-            hub.icon = await args.icon.then(file => file) || hub.icon
-            hub.poster = await args.poster.then(file => file) || hub.poster
             hub.color = args.color || hub.color
             hub.status = args.status || hub.status
             hub.dateEdited = args.dateEdited || hub.dateEdited
             hub.datePublished = args.datePublished || hub.datePublished
             hub.dateCreated = args.dateCreated || hub.dateCreated
+            hub.icon = (icon && icon.path) || hub.icon
+            hub.poster = (poster && poster.path) || hub.poster
+
             await hub.save()
             return true
         },
