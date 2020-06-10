@@ -4,7 +4,7 @@ const News = require('./../models/News')
 const Hub = require('./../models/Hub')
 const PersonalChat = require('./../models/PersonalChat')
 const GroupChat = require('./../models/GroupChat')
-const Image = require('./../models/Image')
+const Avatar = require('./../models/Avatar')
 
 module.exports = {
     User: {
@@ -100,6 +100,16 @@ module.exports = {
         countHubs: async () => await Hub.estimatedDocumentCount()
     },
     Mutation: {
+        addAvatar: async (_, args, { storeUpload }) => {
+            const avatar = await storeUpload(args.name, args.file)
+            await Avatar.create({
+                name: args.name,
+                path: avatar.path,
+                hub: args.hub
+            })
+            return true
+        },
+
         addUser: async (_, args, { storeUpload }) => {
             const avatar = await storeUpload(args.name, args.avatar)
             await User.create({

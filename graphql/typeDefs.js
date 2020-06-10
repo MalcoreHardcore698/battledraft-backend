@@ -12,6 +12,30 @@ module.exports = gql`
         PUBLISHED
     }
 
+    enum AchievementArea {
+        HUB
+        OFFER
+        CHAT
+        TOURNAMENT
+        PROFILE
+    }
+
+    type Avatar {
+        id: ID!
+        order: Int!
+        name: String!
+        path: String!
+        complexity: Int!
+        hub: ID!
+    }
+
+    type Achievement {
+        id: ID!
+        title: String!
+        description: String!
+        area: AchievementArea!
+    }
+
     type User {
         id: ID!
         name: String!
@@ -22,10 +46,12 @@ module.exports = gql`
         balance: Int
         level: Int
         experience: Int
-        avatar: String
+        avatar: Avatar
+        availableAvatars: [Avatar]
         offers: [Offer]
         payment: [Payment]
         preferences: [Hub]
+        achievements: [Achievement]
         transactions: [Transaction]
         dateLastAuth: String!
         dateRegistration: String!
@@ -139,6 +165,7 @@ module.exports = gql`
     }
 
     type Query {
+        allAvatars: [Avatar]
         allUsers: [User]
         allOffers(status: Status): [Offer]
         allNews(status: Status): [News]
@@ -168,6 +195,12 @@ module.exports = gql`
     }
 
     type Mutation {
+        addAvatar(
+            name: String!
+            file: Upload!
+            hub: ID!
+        ): Boolean!
+        
         addUser(
             name: String!
             password: String!
