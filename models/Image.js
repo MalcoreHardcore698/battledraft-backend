@@ -1,9 +1,13 @@
 const mongoose = require('mongoose')
  
 const ImageSchema = mongoose.Schema({
-    path: String,
-    filename: String,
-    mimetype: String
+    name: { type: String, required: true },
+    path: { type: String, required: true },
+    category:  {
+        type: String,
+        enum: ['ICON', 'POSTER'],
+        required: true
+    }
 })
  
 module.exports = mongoose.model('Image', ImageSchema)

@@ -6,7 +6,7 @@ const OfferSchema = new Schema({
     hub: { type: Schema.Types.ObjectId, ref: 'Hub', required: true },
     title: { type: String, required: true },
     message: { type: String, required: true },
-    status:  {
+    status: {
         type: String,
         enum: ['MODERATION', 'PUBLISHED'],
         required: true

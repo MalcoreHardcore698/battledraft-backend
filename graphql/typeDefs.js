@@ -20,13 +20,25 @@ module.exports = gql`
         PROFILE
     }
 
+    enum ImageCategory {
+        ICON
+        POSTER
+    }
+
+    type Image {
+        id: ID!
+        name: String!
+        path: String!
+        category: ImageCategory!
+    }
+
     type Avatar {
         id: ID!
         order: Int!
         name: String!
         path: String!
         complexity: Int!
-        hub: ID!
+        hub: Hub!
     }
 
     type Achievement {
@@ -123,8 +135,8 @@ module.exports = gql`
         title: String!
         description: String!
         slogan: String!
-        icon: String!
-        poster: String!
+        icon: Image!
+        poster: Image!
         color: String!
         offers: [Offer]
         countUsers: Int
@@ -139,7 +151,7 @@ module.exports = gql`
         id: ID!
         title: String!
         body: String!
-        image: String!
+        image: Image!
         hub: Hub!
         source: String
         url: String
@@ -147,6 +159,14 @@ module.exports = gql`
         dateEdited: String
         datePublished: String
         dateCreated: String!
+    }
+
+    input AvatarInput {
+        order: Int!
+        name: String!
+        path: String!
+        complexity: Int!
+        hub: ID!
     }
 
     input PaymentInput {
@@ -166,6 +186,7 @@ module.exports = gql`
 
     type Query {
         allAvatars: [Avatar]
+        allImages: [Image]
         allUsers: [User]
         allOffers(status: Status): [Offer]
         allNews(status: Status): [News]
@@ -174,6 +195,8 @@ module.exports = gql`
         allGroupChats: [GroupChat]
         allUserRoles: [UserRoles]
         allStatus: [Status]
+        allImageCategories: [ImageCategory]
+        allAchievementAreas: [AchievementArea]
         allUserOffers(id: ID!): [Offer]!
 
         authUser(
@@ -181,14 +204,18 @@ module.exports = gql`
             email: String
             password: String!
         ): User!
-
+        
+        getAvatar(id: ID!): Avatar
+        getImage(id: ID!): Image
         getUser(id: ID!): User
         getOffer(id: ID!): Offer
         getNews(id: ID!): News
         getHub(id: ID!): Hub
         getPersonalChat(id: ID!): PersonalChat
         getGroupChat(id: ID!): GroupChat
-
+        
+        countAvatars: Int!
+        countImages: Int!
         countUsers: Int!
         countOffers: Int!
         countHubs: Int!
@@ -196,9 +223,37 @@ module.exports = gql`
 
     type Mutation {
         addAvatar(
+            order: Int!
             name: String!
             file: Upload!
+            complexity: Int!
             hub: ID!
+        ): Boolean!
+        editAvatar(
+            id: ID!
+            order: Int
+            name: String
+            file: Upload
+            complexity: Int
+            hub: ID
+        ): Boolean!
+        deleteAvatar(
+            id: ID!
+        ): Boolean!
+
+        addImage(
+            name: String!
+            file: Upload!
+            category: Int!
+        ): Boolean!
+        editImage(
+            id: ID!
+            name: String
+            file: Upload
+            category: Int
+        ): Boolean!
+        deleteImage(
+            id: ID!
         ): Boolean!
         
         addUser(
@@ -210,7 +265,7 @@ module.exports = gql`
             balance: Int
             level: Int
             experience: Int
-            avatar: Upload
+            avatar: AvatarInput
             preferences: [ID]
             payment: PaymentInput
             dateLastAuth: String!
@@ -229,7 +284,7 @@ module.exports = gql`
             balance: Int
             level: Int
             experience: Int
-            avatar: Upload
+            avatar: AvatarInput
             preferences: [ID]
             dateLastAuth: String
             dateRegistration: String

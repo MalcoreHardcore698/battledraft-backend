@@ -5,6 +5,7 @@ const Hub = require('./../models/Hub')
 const PersonalChat = require('./../models/PersonalChat')
 const GroupChat = require('./../models/GroupChat')
 const Avatar = require('./../models/Avatar')
+const Image = require('./../models/Image')
 
 module.exports = {
     User: {
@@ -55,6 +56,8 @@ module.exports = {
         }
     },
     Query: {
+        allAvatars: async () => await Avatar.find(),
+        allImages: async () => await Image.find(),
         allUsers: async () => await User.find(),
         allOffers: async () => await Offer.find(),
         allNews: async (_, { status }) => {
@@ -78,6 +81,17 @@ module.exports = {
             'MODERATION',
             'PUBLISHED'
         ]),
+        allImageCategories: () => ([
+            'ICON',
+            'POSTER'
+        ]),
+        allAchievementAreas: () => ([
+            'HUB',
+            'OFFER',
+            'CHAT',
+            'TOURNAMENT',
+            'PROFILE'
+        ]),
         allUserOffers: async (_, { id }) => {
             const offers = await Offer.find({ user: id })
             return offers || []
@@ -95,6 +109,8 @@ module.exports = {
         getPersonalChat: async (_,  { id }) => await PersonalChat.findById(id),
         getGroupChat: async (_,  { id }) => await GroupChat.findById(id),
 
+        countAvatars: async () => await Avatar.estimatedDocumentCount(),
+        countImages: async () => await Image.estimatedDocumentCount(),
         countUsers: async () => await User.estimatedDocumentCount(),
         countOffers: async () => await Offer.estimatedDocumentCount(),
         countHubs: async () => await Hub.estimatedDocumentCount()
@@ -103,10 +119,54 @@ module.exports = {
         addAvatar: async (_, args, { storeUpload }) => {
             const avatar = await storeUpload(args.name, args.file)
             await Avatar.create({
+                order: args.order,
                 name: args.name,
                 path: avatar.path,
+                complexity: args.complexity,
                 hub: args.hub
             })
+            return true
+        },
+        editAvatar: async (_, args, { storeUpload }) => {
+            const avatar = await Avatar.findById(args.id)
+            const file = args.file && await storeUpload(args.name, args.file)
+
+            avatar.order = args.order || avatar.order
+            avatar.name = args.name || avatar.name
+            avatar.path = (file && file.path) || avatar.path
+            avatar.complexity = args.complexity || avatar.complexity
+            avatar.hub = args.hub || avatar.hub
+            await avatar.save()
+
+            return true
+        },
+        deleteAvatar: async (_, { id }) => {
+            await Avatar.findById(id).deleteOne()
+            return true
+        },
+
+        addImage: async (_, args, { storeUpload }) => {
+            const image = await storeUpload(args.name, args.file)
+            await Image.create({
+                name: args.name,
+                path: image.path,
+                category: args.category
+            })
+            return true
+        },
+        editImage: async (_, args, { storeUpload }) => {
+            const image = await Image.findById(args.id)
+            const file = args.file && await storeUpload(args.name, args.file)
+
+            image.name = args.name || image.name
+            image.path = (file && file.path) || image.path
+            image.category = args.category || image.category
+            await image.save()
+            
+            return true
+        },
+        deleteImage: async (_, { id }) => {
+            await Image.findById(id).deleteOne()
             return true
         },
 
