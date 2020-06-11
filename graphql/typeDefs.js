@@ -244,13 +244,13 @@ module.exports = gql`
         addImage(
             name: String!
             file: Upload!
-            category: Int!
+            category: ImageCategory!
         ): Boolean!
         editImage(
             id: ID!
             name: String
             file: Upload
-            category: Int
+            category: ImageCategory
         ): Boolean!
         deleteImage(
             id: ID!
