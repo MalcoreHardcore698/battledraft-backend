@@ -253,7 +253,7 @@ module.exports = gql`
             category: ImageCategory
         ): Boolean!
         deleteImage(
-            id: ID!
+            id: [ID]!
         ): Boolean!
         
         addUser(

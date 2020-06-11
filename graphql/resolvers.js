@@ -166,7 +166,9 @@ module.exports = {
             return true
         },
         deleteImage: async (_, { id }) => {
-            await Image.findById(id).deleteOne()
+            for (i of id) {
+                await Image.findById(id).deleteOne()
+            }
             return true
         },
 
