@@ -8,9 +8,13 @@ const Avatar = require('./../models/Avatar')
 const Image = require('./../models/Image')
 
 module.exports = {
+    Avatar: {
+        hub: async (parent) => await Hub.findById(parent.hub)
+    },
     User: {
         id: parent => parent.id,
         name: parent => parent.name,
+        avatar: async (parent) => await Avatar.findById(parent.avatar),
         offers: async (parent) => {
             const offers = await Offer.find({ user: parent.id })
             return offers
@@ -32,17 +36,16 @@ module.exports = {
             const offers = await Offer.find({ hub: parent.id })
             return offers
         },
+        icon: async (parent) => await Image.findById(parent.icon),
+        poster: async (parent) => await Image.findById(parent.poster),
         countUsers: () => 0,
         countOffers: async (parent) => {
             const offers = await Offer.find({ hub: parent.id })
             return offers.length
         }
-    },
+    },  
     News: {
-        hub: async (parent) => {
-            const hub = await Hub.findById(parent.hub)
-            return hub
-        }
+        hub: async (parent) => await Hub.findById(parent.hub)
     },
     Offer: {
         id: parent => parent.id,
@@ -172,17 +175,17 @@ module.exports = {
             return true
         },
 
-        addUser: async (_, args, { storeUpload }) => {
-            const avatar = await storeUpload(args.name, args.avatar)
+        addUser: async (_, args) => {
+            const avatar = await Avatar.findById(args.avatar)
             await User.create({
                 ...args,
-                avatar: avatar.path
+                avatar
             })
             return true
         },
-        editUser: async (_, args, { storeUpload }) => {
+        editUser: async (_, args) => {
             const user = await User.findById(args.id)
-            const avatar = args.avatar && await storeUpload(args.name, args.avatar)
+            const avatar = await Avatar.findById(args.avatar)
 
             user.name = args.name || user.name
             user.password = args.password || user.password
@@ -192,7 +195,7 @@ module.exports = {
             user.balance = args.balance || user.balance
             user.level = args.level || user.level
             user.experience = args.experience || user.experience
-            user.avatar = (avatar && avatar.path) || user.avatar
+            user.avatar = (avatar && avatar.id) || user.avatar
             user.preferences = args.preferences || user.preferences
             user.dateLastAuth = args.dateLastAuth || user.dateLastAuth
             user.dateRegistration = args.dateRegistration || user.dateRegistration
@@ -261,20 +264,24 @@ module.exports = {
             return true
         },
 
-        addHub: async (_, args, { storeUpload }) => {
-            const icon = await storeUpload(args.title, args.icon)
-            const poster = await storeUpload(args.title, args.poster)
+        addHub: async (_, args) => {
+            const icon = await Image.findById(args.icon)
+            const poster = await Image.findById(args.poster)
             await Hub.create({
-                ...args,
-                icon: icon.path,
-                poster: poster.path
+                title: args.title,
+                description: args.description,
+                slogan: args.slogan,
+                icon, poster,
+                color: args.color,
+                status: args.status,
+                dateCreated: args.dateCreated
             })
             return true
         },
-        editHub: async (_, args, { storeUpload }) => {
+        editHub: async (_, args) => {
             const hub = await Hub.findById(args.id)
-            const icon = args.icon && await storeUpload(args.title, args.icon)
-            const poster = args.poster && await storeUpload(args.title, args.poster)
+            const icon = await Image.findById(args.icon)
+            const poster = await Image.findById(args.poster)
             
             hub.title = args.title || hub.title
             hub.description = args.description || hub.description
@@ -284,8 +291,8 @@ module.exports = {
             hub.dateEdited = args.dateEdited || hub.dateEdited
             hub.datePublished = args.datePublished || hub.datePublished
             hub.dateCreated = args.dateCreated || hub.dateCreated
-            hub.icon = (icon && icon.path) || hub.icon
-            hub.poster = (poster && poster.path) || hub.poster
+            hub.icon = (icon && icon.id) || hub.icon
+            hub.poster = (poster && poster.id) || hub.poster
 
             await hub.save()
             return true

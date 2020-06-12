@@ -161,14 +161,6 @@ module.exports = gql`
         dateCreated: String!
     }
 
-    input AvatarInput {
-        order: Int!
-        name: String!
-        path: String!
-        complexity: Int!
-        hub: ID!
-    }
-
     input PaymentInput {
         bankBranding: String!
         cardNumber: Int!
@@ -231,14 +223,13 @@ module.exports = gql`
         ): Boolean!
         editAvatar(
             id: ID!
-            order: Int
             name: String
             file: Upload
             complexity: Int
             hub: ID
         ): Boolean!
         deleteAvatar(
-            id: ID!
+            id: [ID]!
         ): Boolean!
 
         addImage(
@@ -265,7 +256,7 @@ module.exports = gql`
             balance: Int
             level: Int
             experience: Int
-            avatar: AvatarInput
+            avatar: ID
             preferences: [ID]
             payment: PaymentInput
             dateLastAuth: String!
@@ -284,7 +275,7 @@ module.exports = gql`
             balance: Int
             level: Int
             experience: Int
-            avatar: AvatarInput
+            avatar: ID
             preferences: [ID]
             dateLastAuth: String
             dateRegistration: String
@@ -337,8 +328,8 @@ module.exports = gql`
             title: String!
             description: String!
             slogan: String!
-            icon: Upload!
-            poster: Upload!
+            icon: ID!
+            poster: ID!
             color: String!
             status: Status!
             dateEdited: String
@@ -350,8 +341,8 @@ module.exports = gql`
             title: String
             description: String
             slogan: String
-            icon: Upload
-            poster: Upload
+            icon: ID
+            poster: ID
             color: String
             status: Status
             dateEdited: String!
