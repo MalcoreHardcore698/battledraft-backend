@@ -45,6 +45,7 @@ module.exports = {
         }
     },  
     News: {
+        image: async (parent) => await Image.findById(parent.image),
         hub: async (parent) => await Hub.findById(parent.hub)
     },
     Offer: {
@@ -233,20 +234,34 @@ module.exports = {
         },
 
         addNews: async (_, args, { storeUpload }) => {
-            const image = await storeUpload(args.title, args.image)
+            const image = await Image.findById(args.image)
+            const imageFile = (args.imageFile) && await storeUpload(args.title, args.imageFile)
+            const newImage = (args.imageFile) && await Image.create({
+                name: imageFile.filename,
+                path: imageFile.path,
+                category: 'POSTER'
+            })
+
             await News.create({
                 ...args,
-                image: image.path
+                image: (newImage) ? newImage.id : image,
             })
             return true
         },
         editNews: async (_, args, { storeUpload }) => {
             const news = await News.findById(args.id)
-            const image = args.image && await storeUpload(args.title, args.image)
+
+            const image = await Image.findById(args.image)
+            const imageFile = (args.imageFile) && await storeUpload(args.title, args.imageFile)
+            const newImage = (args.imageFile) && await Image.create({
+                name: imageFile.filename,
+                path: imageFile.path,
+                category: 'POSTER'
+            })
 
             news.title = args.title || news.title
             news.body = args.body || news.body
-            news.image = (image && image.path) || news.image
+            news.image = (newImage) ? newImage.id : (image && image.id) || news.image
             news.hub = args.hub || news.hub
             news.source = args.source || news.source
             news.url = args.url || news.url
@@ -264,24 +279,53 @@ module.exports = {
             return true
         },
 
-        addHub: async (_, args) => {
+        addHub: async (_, args, { storeUpload }) => {
             const icon = await Image.findById(args.icon)
+            const iconFile = (args.iconFile) && await storeUpload(args.title, args.iconFile)
+            const newIcon = (args.iconFile) && await Image.create({
+                name: iconFile.filename,
+                path: iconFile.path,
+                category: 'ICON'
+            })
+
             const poster = await Image.findById(args.poster)
+            const posterFile = (args.posterFile) && await storeUpload(args.title, args.posterFile)
+            const newPoster = (args.posterFile) && await Image.create({
+                name: posterFile.filename,
+                path: posterFile.path,
+                category: 'POSTER'
+            })
+
             await Hub.create({
                 title: args.title,
                 description: args.description,
                 slogan: args.slogan,
-                icon, poster,
+                icon: (newIcon) ? newIcon.id : icon,
+                poster: (newPoster) ? newPoster.id : poster,
                 color: args.color,
                 status: args.status,
                 dateCreated: args.dateCreated
             })
             return true
         },
-        editHub: async (_, args) => {
+        editHub: async (_, args, { storeUpload }) => {
             const hub = await Hub.findById(args.id)
+
             const icon = await Image.findById(args.icon)
+            const iconFile = (args.iconFile) && await storeUpload(args.title, args.iconFile)
+            const newIcon = (args.iconFile) && await Image.create({
+                name: iconFile.filename,
+                path: iconFile.path,
+                category: 'ICON'
+            })
+
             const poster = await Image.findById(args.poster)
+            const posterFile = (args.posterFile) && await storeUpload(args.title, args.posterFile)
+            const newPoster = (args.posterFile) && await Image.create({
+                name: posterFile.filename,
+                path: posterFile.path,
+                category: 'POSTER'
+            })
             
             hub.title = args.title || hub.title
             hub.description = args.description || hub.description
@@ -291,8 +335,8 @@ module.exports = {
             hub.dateEdited = args.dateEdited || hub.dateEdited
             hub.datePublished = args.datePublished || hub.datePublished
             hub.dateCreated = args.dateCreated || hub.dateCreated
-            hub.icon = (icon && icon.id) || hub.icon
-            hub.poster = (poster && poster.id) || hub.poster
+            hub.icon = (newIcon) ? newIcon.id : (icon && icon.id) || hub.icon
+            hub.poster = (newPoster) ? newPoster.id : (poster && poster.id) || hub.poster
 
             await hub.save()
             return true

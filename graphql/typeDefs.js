@@ -298,7 +298,8 @@ module.exports = gql`
         addNews(
             title: String!
             body: String!
-            image: Upload!
+            image: ID
+            imageFile: Upload
             hub: ID!
             source: String
             url: String
@@ -311,7 +312,8 @@ module.exports = gql`
             id: ID!
             title: String
             body: String
-            image: Upload
+            image: ID
+            imageFile: Upload
             hub: ID
             source: String
             url: String
@@ -328,8 +330,10 @@ module.exports = gql`
             title: String!
             description: String!
             slogan: String!
-            icon: ID!
-            poster: ID!
+            icon: ID
+            poster: ID
+            iconFile: Upload
+            posterFile: Upload
             color: String!
             status: Status!
             dateEdited: String
@@ -343,6 +347,8 @@ module.exports = gql`
             slogan: String
             icon: ID
             poster: ID
+            iconFile: Upload
+            posterFile: Upload
             color: String
             status: Status
             dateEdited: String!

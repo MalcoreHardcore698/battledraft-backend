@@ -1,6 +1,7 @@
-const path = require('path')
 const { createWriteStream, existsSync, mkdirSync, unlink } = require('fs')
 const express = require('express')
+const passport = require('passport')
+const session = require('express-session')
 const mongoose = require('mongoose')
 const { ApolloServer } = require('apollo-server-express')
 const mkdirp = require('mkdirp')
@@ -65,8 +66,21 @@ async function start() {
     server.applyMiddleware({ app })
 
     app.use(express.json())
-    app.use(express.urlencoded({ extended: true }))
     app.use('/uploads', express.static('uploads'))
+    app.use(express.urlencoded({ extended: true }))
+    
+    app.use(session({
+      secret: 'keyboard cat',
+      resave: false,
+      saveUninitialized: true,
+      cookie: { secure: true }
+    }))
+    app.use(passport.initialize())
+    app.use(passport.session())
+
+    app.get('/', (req, res, next) => {
+        res.send('<p>Battledraft API</p>')
+    })
 
     app.listen({ port }, () => {
         console.log(`Server ready at http://api.battledraft.ru/${port}${server.graphqlPath}`)
