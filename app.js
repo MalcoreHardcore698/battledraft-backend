@@ -1,9 +1,10 @@
 const { createWriteStream, existsSync, mkdirSync, unlink } = require('fs')
+const { createServer } = require('http')
 const express = require('express')
 const passport = require('passport')
 const session = require('express-session')
 const mongoose = require('mongoose')
-const { ApolloServer } = require('apollo-server-express')
+const { ApolloServer, PubSub } = require('apollo-server-express')
 const mkdirp = require('mkdirp')
 const shortid = require('shortid')
 const typeDefs = require('./graphql/typeDefs')
@@ -18,6 +19,7 @@ async function start() {
     const port = process.env.PORT || 5000
     const url = process.env.URL
     const app = express()
+    const http = createServer(app)
 
     mongoose.connect(url, {
         useNewUrlParser: true,
@@ -57,13 +59,15 @@ async function start() {
         return file
     }
 
+    const pubsub = new PubSub()
     const server = new ApolloServer({
         typeDefs,
         resolvers,
-        context: { storeUpload }
+        context: { storeUpload, pubsub }
     })
 
     server.applyMiddleware({ app })
+    server.installSubscriptionHandlers(http)
 
     app.use(express.json())
     app.use('/uploads', express.static('uploads'))
@@ -82,9 +86,10 @@ async function start() {
         res.send('<p>Battledraft API</p>')
     })
 
-    app.listen({ port }, () => {
-        console.log(`Server ready at http://api.battledraft.ru/${port}${server.graphqlPath}`)
-    })
+
+    http.listen({ port }, () =>
+        console.log(`Server ready at http://localhost/${port}${server.graphqlPath}`)
+    )
 }
 
 start()

@@ -1,9 +1,10 @@
 const User = require('./../models/User')
+const UserChat = require('./../models/UserChat')
 const Offer = require('./../models/Offer')
 const News = require('./../models/News')
 const Hub = require('./../models/Hub')
-const PersonalChat = require('./../models/PersonalChat')
-const GroupChat = require('./../models/GroupChat')
+const Chat = require('./../models/Chat')
+const Message = require('./../models/Message')
 const Avatar = require('./../models/Avatar')
 const Image = require('./../models/Image')
 
@@ -28,7 +29,25 @@ module.exports = {
                 }
             }
             return hubs
-        }
+        },
+        chats: async (parent) => await UserChat.find({ userId: parent.id, status: 'OPEN' })
+    },
+    Chat: {
+        id: (parent) => parent.id,
+        title: (parent) => parent.title,
+        participants: async (parent) => {
+            const participants = []
+            for (const participant of parent.participants) {
+                const user = await User.findById(participant)
+                participants.push(user)
+            }
+            return participants
+        },
+        messages: async (parent) => await Message.find({ chat: parent.id })
+    },
+    Message: {
+        sender: async (parent) => await User.findById(parent.sender),
+        receiver: async (parent) => await User.findById(parent.receiver)
     },
     Hub: {
         id: parent => parent.id,
@@ -74,8 +93,7 @@ module.exports = {
             if (status) return hubs.filter(h => h.status === status)
             return hubs
         },
-        allPersonalChats: async () => await PersonalChat.find(),
-        allGroupChats: async () => await GroupChat.find(),
+        allChats: async () => await Chat.find(),
         allUserRoles: () => ([
             'ADMINISTRATOR',
             'MODERATOR',
@@ -110,8 +128,7 @@ module.exports = {
         getOffer: async (_,  { id }) => await Offer.findById(id),
         getNews: async (_,  { id }) => await News.findById(id),
         getHub: async (_,  { id }) => await Hub.findById(id),
-        getPersonalChat: async (_,  { id }) => await PersonalChat.findById(id),
-        getGroupChat: async (_,  { id }) => await GroupChat.findById(id),
+        getChat: async (_,  { id }) => await Chat.findById(id),
 
         countAvatars: async () => await Avatar.estimatedDocumentCount(),
         countImages: async () => await Image.estimatedDocumentCount(),
@@ -348,13 +365,104 @@ module.exports = {
             return true
         },
 
-        addPersonalChat: async (_, args) => {
-            await PersonalChat.create(args)
+        addChat: async (_, args, { pubsub }) => {
+            let candidate = await Chat.findOne({
+                owner: args.owner,
+                participants: [args.id, args.owner]
+            })
+
+            if (!candidate) {
+                candidate = await Chat.create({
+                    ...args,
+                    participants: args.participants.map(participant => participant.id),
+                    dateCreated: new Date()
+                })
+            }
+            
+            // CHANGE STATUS ON 'OPEN'
+            for (const participant of args.participants) {
+                const userChat = await UserChat.findOne({ chatId: candidate.id })
+                
+                if (userChat) {
+                    userChat.status = 'OPEN'
+                    await userChat.save()
+                } else {
+                    await UserChat.create({
+                        userId: participant.id,
+                        chatId: candidate.id,
+                        status: 'OPEN'
+                    })
+                }
+            }
+
+            const userchats = await UserChat.find({
+                userId: args.id,
+                status: 'OPEN'
+            })
+            pubsub.publish('userchats', { userchats })
+
+            return candidate.id
+        },
+        closeUserChat: async (_, args, { pubsub }) => {
+            const chat = await UserChat.findOne(args)
+            chat.status = 'CLOSE'
+            await chat.save()
+
+            const userchats = await UserChat.find({
+                userId: args.id,
+                status: 'OPEN'
+            })
+            pubsub.publish('userchats', { userchats })
+
             return true
         },
-        addGroupChat: async (_, args) => {
-            await GroupChat.create(args)
+
+        addMessage: async (_, args, { pubsub }) => {
+            await Message.create({
+                ...args,
+                dateCreated: new Date()
+            })
+
+            const receiverchat = await UserChat.findOne({
+                userId: args.receiver,
+                chatId: args.chat
+            })
+
+            if (receiverchat) {
+                receiverchat.status = 'OPEN'
+                await receiverchat.save()
+            } else {
+                await UserChat.create({
+                    userId: args.receiver,
+                    chatId: args.chat,
+                    status: 'OPEN'
+                })
+            }
+
+            const messages = await Message.find({ chat: args.chat })
+            pubsub.publish('message-added', { messages })
+
+            const senderchats = await UserChat.find({
+                userId: args.sender,
+                status: 'OPEN'
+            })
+            pubsub.publish('userchats', { userchats: senderchats })
+
+            const receiverchats = await UserChat.find({
+                userId: args.receiver,
+                status: 'OPEN'
+            })
+            pubsub.publish('userchats', { userchats: receiverchats })
+
             return true
+        }
+    },
+    Subscription: {
+        messages: {
+            subscribe: async (parent, args, { pubsub }) => pubsub.asyncIterator('message-added')
+        },
+        userchats: {
+            subscribe: async (parent, args, { pubsub }) => pubsub.asyncIterator('userchats'),
         }
     }
 }

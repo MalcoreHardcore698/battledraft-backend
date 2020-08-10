@@ -12,6 +12,11 @@ module.exports = gql`
         PUBLISHED
     }
 
+    enum ChatStatus {
+        OPEN
+        CLOSE
+    }
+
     enum AchievementArea {
         HUB
         OFFER
@@ -65,6 +70,7 @@ module.exports = gql`
         preferences: [Hub]
         achievements: [Achievement]
         transactions: [Transaction]
+        chats: [UserChat]
         dateLastAuth: String!
         dateRegistration: String!
         isVerifiedEmail: Boolean
@@ -91,31 +97,27 @@ module.exports = gql`
 
     type Message {
         id: ID!
-        user: User!
-        text: String!
-        date: String!
-        status: Status!
-        dateEdited: String!
-        dateCreated: String!
-    }
-
-    type PersonalChat {
-        id: ID!
-        user: User!
-        messages: [Message]
-        status: Status!
-        dateEdited: String!
+        chat: Chat!
+        sender: User!
+        receiver: User!
+        message: String!
         dateCreated: String!
     }
     
-    type GroupChat {
+    type Chat {
         id: ID!
-        hub: Hub!
-        members: [User]
+        owner: ID!
+        title: String!
+        participants: [User!]!
         messages: [Message]
-        status: Status!
-        dateEdited: String
         dateCreated: String!
+    }
+
+    type UserChat {
+        id: ID!
+        userId: ID!
+        chatId: ID!
+        status: ChatStatus!
     }
 
     type Offer {
@@ -176,6 +178,10 @@ module.exports = gql`
         sum: Float
     }
 
+    input UserIDInput {
+        id: ID!
+    }
+
     type Query {
         allAvatars: [Avatar]
         allImages: [Image]
@@ -183,8 +189,7 @@ module.exports = gql`
         allOffers(status: Status): [Offer]
         allNews(status: Status): [News]
         allHubs(status: Status): [Hub]
-        allPersonalChats: [PersonalChat]
-        allGroupChats: [GroupChat]
+        allChats: [Chat]
         allUserRoles: [UserRoles]
         allStatus: [Status]
         allImageCategories: [ImageCategory]
@@ -203,9 +208,8 @@ module.exports = gql`
         getOffer(id: ID!): Offer
         getNews(id: ID!): News
         getHub(id: ID!): Hub
-        getPersonalChat(id: ID!): PersonalChat
-        getGroupChat(id: ID!): GroupChat
-        
+        getChat(id: ID!): Chat
+
         countAvatars: Int!
         countImages: Int!
         countUsers: Int!
@@ -285,14 +289,6 @@ module.exports = gql`
         ): Boolean!
         deleteUser(
             id: ID!
-        ): Boolean!
-
-        addPersonalChat(
-            hub: ID!
-        ): Boolean!
-
-        addGroupChat(
-            user: ID!
         ): Boolean!
 
         addNews(
@@ -383,5 +379,28 @@ module.exports = gql`
         deleteOffer(
             id: [ID!]!
         ): Boolean!
+
+        addChat(
+            id: ID!
+            title: String!
+            participants: [UserIDInput!]!
+            owner: ID!
+        ): ID!
+        closeUserChat(
+            userId: ID!
+            chatId: ID!
+        ): Boolean!
+
+        addMessage(
+            chat: ID!
+            sender: ID!
+            receiver: ID!
+            message: String!
+        ): Boolean!
+    }
+
+    type Subscription {
+        messages(chat: ID!): [Message]
+        userchats(user: ID!): [UserChat]
     }
 `
